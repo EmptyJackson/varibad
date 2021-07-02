@@ -100,3 +100,12 @@ register(
     entry_point='environments.navigation.gridworld:GridNavi',
     kwargs={'num_cells': 5, 'num_steps': 15},
 )
+
+# # Alchemy
+# # ----------------------------------------
+#
+register(
+    'Alchemy-v0',
+    entry_point='environments.alchemy.alchemy:AlchemyEnv',
+    kwargs={'level_name': 'perceptual_mapping_randomized_with_rotation_and_random_bottleneck'},
+)
