@@ -107,5 +107,5 @@ register(
 register(
     'Alchemy-v0',
     entry_point='environments.alchemy.alchemy:AlchemyEnv',
-    kwargs={'level_name': 'perceptual_mapping_randomized_with_rotation_and_random_bottleneck'},
+    kwargs={'num_trials': 10, 'num_stones_per_trial': 3, 'num_potions_per_trial': 12, 'max_steps_per_trial': 20},
 )

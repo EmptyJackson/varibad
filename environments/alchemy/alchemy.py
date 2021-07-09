@@ -1,19 +1,26 @@
 import gym
-from gym import spaces
+import numpy as np
 
-from environments.alchemy.dm_alchemy.dm_alchemy import symbolic_alchemy
+from gym import spaces
+from dm_alchemy import symbolic_alchemy
+
+LEVEL_NAME = 'alchemy/perceptual_mapping_randomized_with_rotation_and_random_bottleneck'
 
 class AlchemyEnv(gym.Env):
-    def __init__(self, level_name):
+
+    def __init__(self, num_trials=10, num_stones_per_trial=3, num_potions_per_trial=12, max_steps_per_trial=20):
         super(AlchemyEnv, self).__init__()
 
+        # TODO: Use max_rollouts_per_task somewhere (i think)
+
         self.seed()
-        self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name, seed=123)
+        self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name=LEVEL_NAME, num_trials=num_trials, num_stones_per_trial=num_stones_per_trial, num_potions_per_trial=num_potions_per_trial, max_steps_per_trial=max_steps_per_trial, seed=123)
 
         self._max_episode_steps = self.env.max_steps_per_trial
         self.step_count = 0
 
-        self.observation_space = spaces.Box(low=-1, high=1, shape=(39,))
+        # TODO: Values can be outside of [-1, 1], got 2 from looking
+        self.observation_space = spaces.Box(low=-1, high=2, shape=(39,))
         self.action_space = spaces.Discrete(40)
 
     def step(self, action):
@@ -22,15 +29,23 @@ class AlchemyEnv(gym.Env):
         Should return: state, reward, done, info
         where info has to include a field 'task'.
         """
-        timestep = self.env.step(action)
-        return timestep.observation['symbolic_obs'], timestep.reward, timestep.last(), {'task': None}
+        if isinstance(action, np.ndarray) and action.ndim == 1:
+            action = action[0]
+        self.timestep = self.env.step(action)
+
+        # self.timestep.last()
+        return self.timestep.observation['symbolic_obs'], self.timestep.reward, self.env.is_new_trial(), {'task': None}
 
     def reset(self):
         """
         Reset the environment. This should *NOT* automatically reset the task!
         Resetting the task is handled in the varibad wrapper (see wrappers.py).
+
+        Completed automatically by Alchemy when trial is done.
         """
-        return self.env.reset().observation['symbolic_obs']
+        if not self.env.is_new_trial():
+            raise Exception("Alchemy reset not on trial boundary.")
+        return self.timestep.observation['symbolic_obs']
 
     def get_task(self):
         """
@@ -43,6 +58,7 @@ class AlchemyEnv(gym.Env):
         Reset the task, either at random (if task=None) or the given task.
         Should *not* reset the environment.
         """
+        self.timestep = self.env.reset()
         return 0
 
     # def visualise_behaviour(self,
