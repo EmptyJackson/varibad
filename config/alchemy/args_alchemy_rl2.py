@@ -10,7 +10,7 @@ def get_args(rest_args):
     parser.add_argument('--num_frames', type=int, default=2e7,
                         help='number of frames to train')
     parser.add_argument('--max_rollouts_per_task', type=int,
-                        default=4, help='number of MDP episodes for adaptation')
+                        default=10, help='number of MDP episodes for adaptation')
     parser.add_argument('--exp_label', default='rl2',
                         help='label (typically name of method)')
     parser.add_argument('--env_name', default='Alchemy-v0',
