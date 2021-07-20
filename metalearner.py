@@ -12,6 +12,7 @@ from environments.parallel_envs import make_vec_envs
 from models.policy import Policy
 from utils import evaluation as utl_eval
 from utils import helpers as utl
+from utils.wandb_logger import WandbLogger
 from utils.tb_logger import TBLogger
 from vae import VaribadVAE
 
@@ -32,8 +33,11 @@ class MetaLearner:
         self.frames = 0
         self.iter_idx = -1
 
-        # initialise tensorboard logger
-        self.logger = TBLogger(self.args, self.args.exp_label)
+        # initialise logger
+        if args.wandb:
+            self.logger = WandbLogger(self.args, self.args.exp_label)
+        else:
+            self.logger = TBLogger(self.args, self.args.exp_label)
 
         # initialise environments
         self.envs = make_vec_envs(env_name=args.env_name, seed=args.seed, num_processes=args.num_processes,

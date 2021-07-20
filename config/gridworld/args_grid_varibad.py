@@ -180,6 +180,11 @@ def get_args(rest_args):
     parser.add_argument('--eval_interval', type=int, default=500, help='eval interval, one eval per n updates')
     parser.add_argument('--vis_interval', type=int, default=500, help='visualisation interval, one eval per n updates')
     parser.add_argument('--results_log_dir', default=None, help='directory to save results (None uses ./logs)')
+    parser.add_argument('--wandb', action='store_true', help='whether to log to wandb instead of tensorboard')
+    parser.add_argument('--wandb_entity', default='mjackson', help='wandb entity')
+    parser.add_argument('--wandb_project', default='msc-diss', help='wandb project')
+    parser.add_argument('--wandb_group', default='gridworld_varibad', help='wandb group')
+    parser.add_argument('--wandb_job_type', default='debug', help='wandb job type')
 
     # general settings
     parser.add_argument('--seed',  nargs='+', type=int, default=[73])
