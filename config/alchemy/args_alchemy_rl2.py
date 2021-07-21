@@ -100,7 +100,7 @@ def get_args(rest_args):
                         help='learning rate (default: 7e-4)')
     # since we use RL2, we have to match this LR (for the encoder) with the one for the policy
     parser.add_argument('--lr_vae', type=float, default=7e-4)
-    parser.add_argument('--num_processes', type=int, default=16,
+    parser.add_argument('--num_processes', type=int, default=8,
                         help='how many training CPU processes / parallel environments to use (default: 16)')
     parser.add_argument('--policy_num_steps', type=int, default=60,
                         help='number of env steps to do (per process) before updating')
