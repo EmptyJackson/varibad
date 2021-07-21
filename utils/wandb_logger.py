@@ -42,7 +42,8 @@ class WandbLogger:
                          project=args.wandb_project,
                          group=args.wandb_group,
                          job_type=args.wandb_job_type,
-                         save_code=True)
+                         save_code=True,
+                         settings=wandb.Settings(start_method='fork'))
         wandb.config.update(args)
 
     def add(self, name, value, x_pos):
