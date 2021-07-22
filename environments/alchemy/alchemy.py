@@ -14,12 +14,12 @@ class AlchemyEnv(gym.Env):
         # TODO: Use max_rollouts_per_task somewhere (i think)
 
         self.seed()
-        self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name=LEVEL_NAME, num_trials=num_trials, num_stones_per_trial=num_stones_per_trial, num_potions_per_trial=num_potions_per_trial, max_steps_per_trial=max_steps_per_trial, seed=123)
+        self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name=LEVEL_NAME, num_trials=num_trials, num_stones_per_trial=num_stones_per_trial, num_potions_per_trial=num_potions_per_trial, max_steps_per_trial=max_steps_per_trial)
 
         self._max_episode_steps = self.env.max_steps_per_trial
         self.step_count = 0
 
-        # TODO: Values can be outside of [-1, 1], got 2 from looking
+        # TODO: Values can be outside of [-1, 1], got 2 from manual observation
         self.observation_space = spaces.Box(low=-1, high=2, shape=(39,))
         self.action_space = spaces.Discrete(40)
 
