@@ -407,6 +407,10 @@ class MetaLearner:
                 self.logger.add('return_avg_per_frame/episode_{}'.format(k + 1), returns_avg[k], self.frames)
                 self.logger.add('return_std_per_iter/episode_{}'.format(k + 1), returns_std[k], self.iter_idx)
                 self.logger.add('return_std_per_frame/episode_{}'.format(k + 1), returns_std[k], self.frames)
+            self.logger.add('return_avg_per_iter/episode_tot'.format(k + 1), returns_avg.sum(dim=0), self.iter_idx)
+            self.logger.add('return_avg_per_frame/episode_tot'.format(k + 1), returns_avg.sum(dim=0), self.frames)
+            self.logger.add('return_std_per_iter/episode_tot'.format(k + 1), returns_std.sum(dim=0), self.iter_idx)
+            self.logger.add('return_std_per_frame/episode_tot'.format(k + 1), returns_std.sum(dim=0), self.frames)
 
             print(f"Updates {self.iter_idx}, "
                   f"Frames {self.frames}, "
