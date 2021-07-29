@@ -13,4 +13,4 @@ mujoco-py==2.0.2.10
 wheel
 setuptools
 frozendict
-git+git://github.com/deepmind/dm_alchemy@master#egg=dm_alchemy
+git+git://github.com/EmptyJackson/dm_alchemy@master#egg=dm_alchemy

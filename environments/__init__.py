@@ -107,6 +107,6 @@ register(
 register(
     'Alchemy-v0',
     entry_point='environments.alchemy.alchemy:AlchemyEnv',
-    kwargs={'num_trials': 10, 'num_stones_per_trial': 3, 'num_potions_per_trial': 12, 'max_steps_per_trial': 20},
+    kwargs={'num_trials': 10, 'num_stones_per_trial': 3, 'num_potions_per_trial': 12, 'max_steps_per_trial': 20, 'fixed': False},
     max_episode_steps=20
 )
