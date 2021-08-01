@@ -360,6 +360,10 @@ class VaribadVAE:
             else:
                 state_reconstruction_loss = state_reconstruction_loss.sum(dim=0)
             # avg/sum across individual reconstruction terms
+            for i in range(10):
+                # Skip final (inter-trial) step
+                self.logger.add('vae_losses/trial_' + str(i) + '/state_reconstr_err',
+                                state_reconstruction_loss[20*i:(20*i)+19].mean(), 0)
             if self.args.vae_avg_reconstruction_terms:
                 state_reconstruction_loss = state_reconstruction_loss.mean(dim=0)
             else:

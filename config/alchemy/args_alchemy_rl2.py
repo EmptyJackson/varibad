@@ -101,7 +101,7 @@ def get_args(rest_args):
                         help='how many trajectories to use for VAE update')
     parser.add_argument('--tbptt_stepsize', type=int, default=None,
                         help='stepsize for truncated backpropagation through time; None uses max (horizon of BAMDP)')
-    parser.add_argument('--vae_subsample_elbos', type=int, default=50,
+    parser.add_argument('--vae_subsample_elbos', type=int, default=None,
                         help='for how many timesteps to compute the ELBO; None uses all')
     parser.add_argument('--vae_subsample_decodes', type=int, default=None,
                         help='number of reconstruction terms to subsample; None uses all')
