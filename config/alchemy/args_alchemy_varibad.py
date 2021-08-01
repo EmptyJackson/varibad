@@ -114,7 +114,7 @@ def get_args(rest_args):
     parser.add_argument('--latent_dim', type=int, default=5, help='dimensionality of latent space')
 
     # - decoder: rewards
-    parser.add_argument('--decode_reward', type=boolean_argument, default=True, help='use reward decoder')
+    parser.add_argument('--decode_reward', type=boolean_argument, default=False, help='use reward decoder')
     parser.add_argument('--rew_loss_coeff', type=float, default=1.0, help='weight for state loss (vs reward loss)')
     parser.add_argument('--input_prev_state', type=boolean_argument, default=True, help='use prev state for rew pred')
     parser.add_argument('--input_action', type=boolean_argument, default=True, help='use prev action for rew pred')
@@ -128,7 +128,7 @@ def get_args(rest_args):
                              'deterministic (treat as regression problem)')
 
     # - decoder: state transitions
-    parser.add_argument('--decode_state', type=boolean_argument, default=False, help='use state decoder')
+    parser.add_argument('--decode_state', type=boolean_argument, default=True, help='use state decoder')
     parser.add_argument('--state_loss_coeff', type=float, default=1.0, help='weight for state loss')
     parser.add_argument('--state_decoder_layers', nargs='+', type=int, default=[64, 32])
     parser.add_argument('--state_pred_type', type=str, default='deterministic', help='choose: deterministic, gaussian')
