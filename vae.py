@@ -246,7 +246,7 @@ class VaribadVAE:
         return kl_divergences
 
     def compute_loss(self, latent_mean, latent_logvar, vae_prev_obs, vae_next_obs, vae_actions,
-                     vae_rewards, vae_tasks, trajectory_lens):
+                     vae_rewards, vae_tasks, trajectory_lens, log=False):
         """
         Computes the VAE loss for the given data.
         Batches everything together and therefore needs all trajectories to be of the same length.
@@ -360,10 +360,11 @@ class VaribadVAE:
             else:
                 state_reconstruction_loss = state_reconstruction_loss.sum(dim=0)
             # avg/sum across individual reconstruction terms
-            for i in range(10):
-                # Skip final (inter-trial) step
-                self.logger.add('vae_losses/trial_' + str(i) + '_state_err',
-                                state_reconstruction_loss[20*i:(20*i)+19].mean(), 0)
+            if log:
+                for i in range(10):
+                    # Skip final (inter-trial) step
+                    self.logger.add('vae_losses/trial_' + str(i) + '_state_err',
+                                    state_reconstruction_loss[20*i:(20*i)+19].mean(), 0)
             if self.args.vae_avg_reconstruction_terms:
                 state_reconstruction_loss = state_reconstruction_loss.mean(dim=0)
             else:
@@ -520,7 +521,7 @@ class VaribadVAE:
 
         return rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss
 
-    def compute_vae_loss(self, update=False, pretrain_index=None):
+    def compute_vae_loss(self, update=False, pretrain_index=None, log=False):
         """ Returns the VAE loss """
 
         if not self.rollout_storage.ready_for_update():
@@ -554,7 +555,7 @@ class VaribadVAE:
                                                              trajectory_lens)
         else:
             losses = self.compute_loss(latent_mean, latent_logvar, vae_prev_obs, vae_next_obs, vae_actions,
-                                       vae_rewards, vae_tasks, trajectory_lens)
+                                       vae_rewards, vae_tasks, trajectory_lens, log)
         rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss = losses
 
         # VAE loss = KL loss + reward reconstruction + state transition reconstruction

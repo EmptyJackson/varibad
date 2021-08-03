@@ -412,6 +412,8 @@ class MetaLearner:
             self.logger.add('return_std_per_iter/episode_tot'.format(k + 1), returns_std.sum(dim=0), self.iter_idx)
             self.logger.add('return_std_per_frame/episode_tot'.format(k + 1), returns_std.sum(dim=0), self.frames)
 
+            self.vae.compute_vae_loss(log=True)
+
             print(f"Updates {self.iter_idx}, "
                   f"Frames {self.frames}, "
                   f"FPS {int(self.frames / (time.time() - start_time))}, "
