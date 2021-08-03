@@ -46,5 +46,10 @@ class WandbLogger:
                          settings=wandb.Settings(start_method='fork'))
         wandb.config.update(args)
 
+        self.entry = {}
+
     def add(self, name, value, x_pos):
-        wandb.log({name: value})
+        if name in self.entry:
+            wandb.log(self.entry)
+            self.entry = {}
+        self.entry[name] = value
