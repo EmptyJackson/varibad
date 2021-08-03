@@ -246,7 +246,7 @@ class VaribadVAE:
         return kl_divergences
 
     def compute_loss(self, latent_mean, latent_logvar, vae_prev_obs, vae_next_obs, vae_actions,
-                     vae_rewards, vae_tasks, trajectory_lens, log=False):
+                     vae_rewards, vae_tasks, trajectory_lens, log_trial_err=False):
         """
         Computes the VAE loss for the given data.
         Batches everything together and therefore needs all trajectories to be of the same length.
@@ -360,7 +360,7 @@ class VaribadVAE:
             else:
                 state_reconstruction_loss = state_reconstruction_loss.sum(dim=0)
             # avg/sum across individual reconstruction terms
-            if log:
+            if log_trial_err:
                 for i in range(10):
                     # Skip final (inter-trial) step
                     self.logger.add('vae_losses/trial_' + str(i) + '_state_err',
@@ -521,7 +521,7 @@ class VaribadVAE:
 
         return rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss
 
-    def compute_vae_loss(self, update=False, pretrain_index=None, log=False):
+    def compute_vae_loss(self, update=False, pretrain_index=None, log_trial_err=False):
         """ Returns the VAE loss """
 
         if not self.rollout_storage.ready_for_update():
@@ -555,7 +555,7 @@ class VaribadVAE:
                                                              trajectory_lens)
         else:
             losses = self.compute_loss(latent_mean, latent_logvar, vae_prev_obs, vae_next_obs, vae_actions,
-                                       vae_rewards, vae_tasks, trajectory_lens, log)
+                                       vae_rewards, vae_tasks, trajectory_lens, log_trial_err)
         rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss = losses
 
         # VAE loss = KL loss + reward reconstruction + state transition reconstruction
@@ -565,34 +565,35 @@ class VaribadVAE:
                 self.args.task_loss_coeff * task_reconstruction_loss +
                 self.args.kl_weight * kl_loss).mean()
 
-        # make sure we can compute gradients
-        if not self.args.disable_kl_term:
-            assert kl_loss.requires_grad
-        if self.args.decode_reward:
-            assert rew_reconstruction_loss.requires_grad
-        if self.args.decode_state:
-            assert state_reconstruction_loss.requires_grad
-        if self.args.decode_task:
-            assert task_reconstruction_loss.requires_grad
-
         # overall loss
         elbo_loss = loss.mean()
 
-        if update:
-            self.optimiser_vae.zero_grad()
-            elbo_loss.backward()
-            # clip gradients
-            if self.args.encoder_max_grad_norm is not None:
-                nn.utils.clip_grad_norm_(self.encoder.parameters(), self.args.encoder_max_grad_norm)
-            if self.args.decoder_max_grad_norm is not None:
-                if self.args.decode_reward:
-                    nn.utils.clip_grad_norm_(self.reward_decoder.parameters(), self.args.decoder_max_grad_norm)
-                if self.args.decode_state:
-                    nn.utils.clip_grad_norm_(self.state_decoder.parameters(), self.args.decoder_max_grad_norm)
-                if self.args.decode_task:
-                    nn.utils.clip_grad_norm_(self.task_decoder.parameters(), self.args.decoder_max_grad_norm)
-            # update
-            self.optimiser_vae.step()
+        if not log_trial_err:
+            # make sure we can compute gradients
+            if not self.args.disable_kl_term:
+                assert kl_loss.requires_grad
+            if self.args.decode_reward:
+                assert rew_reconstruction_loss.requires_grad
+            if self.args.decode_state:
+                assert state_reconstruction_loss.requires_grad
+            if self.args.decode_task:
+                assert task_reconstruction_loss.requires_grad
+
+            if update:
+                self.optimiser_vae.zero_grad()
+                elbo_loss.backward()
+                # clip gradients
+                if self.args.encoder_max_grad_norm is not None:
+                    nn.utils.clip_grad_norm_(self.encoder.parameters(), self.args.encoder_max_grad_norm)
+                if self.args.decoder_max_grad_norm is not None:
+                    if self.args.decode_reward:
+                        nn.utils.clip_grad_norm_(self.reward_decoder.parameters(), self.args.decoder_max_grad_norm)
+                    if self.args.decode_state:
+                        nn.utils.clip_grad_norm_(self.state_decoder.parameters(), self.args.decoder_max_grad_norm)
+                    if self.args.decode_task:
+                        nn.utils.clip_grad_norm_(self.task_decoder.parameters(), self.args.decoder_max_grad_norm)
+                # update
+                self.optimiser_vae.step()
 
         self.log(elbo_loss, rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss,
                  pretrain_index)
