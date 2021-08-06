@@ -4,8 +4,28 @@ import datetime
 
 class WandbLogger:
     def __init__(self, args, exp_label):
+        # Initialise Weights and Biases
+        if args.wandb_id == None:
+            self.wandb_id = wandb.util.generate_id()
+        else:
+            self.wandb_id = args.wandb_id
+
+        run = wandb.init(entity=args.wandb_entity,
+                         project=args.wandb_project,
+                         group=args.wandb_group,
+                         job_type=args.wandb_job_type,
+                         save_code=True,
+                         settings=wandb.Settings(start_method='fork'),
+                         id=self.wandb_id,
+                         resume='allow')
+        wandb.config.update(args, allow_val_change=True)
+
+        self.resumed = wandb.run.resumed
+        if self.resumed:
+            print('Resuming wandb run', self.wandb_id)
+
         # Create output folder for visualisations
-        self.output_name = exp_label + '_' + str(args.seed) + '_' + datetime.datetime.now().strftime('_%d:%m_%H:%M:%S')
+        self.output_name = exp_label + '_' + self.wandb_id
         try:
             log_dir = args.results_log_dir
         except AttributeError:
@@ -36,15 +56,6 @@ class WandbLogger:
 
         if not os.path.exists(self.full_output_folder):
             os.makedirs(self.full_output_folder)
-        
-        # Initialise Weights and Biases
-        run = wandb.init(entity=args.wandb_entity,
-                         project=args.wandb_project,
-                         group=args.wandb_group,
-                         job_type=args.wandb_job_type,
-                         save_code=True,
-                         settings=wandb.Settings(start_method='fork'))
-        wandb.config.update(args)
 
         self.entry = {}
 

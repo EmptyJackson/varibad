@@ -40,10 +40,13 @@ class MetaLearner:
             self.logger = TBLogger(self.args, self.args.exp_label)
 
         # initialise environments
+        ret_rms = None
+        if self.args.wandb and self.logger.resumed:
+            ret_rms = utl.load_obj(os.path.join(self.logger.full_output_folder, 'models'), "env_rew_rms")
         self.envs = make_vec_envs(env_name=args.env_name, seed=args.seed, num_processes=args.num_processes,
                                   gamma=args.policy_gamma, device=device,
                                   episodes_per_task=self.args.max_rollouts_per_task,
-                                  normalise_rew=args.norm_rew_for_policy, ret_rms=None,
+                                  normalise_rew=args.norm_rew_for_policy, ret_rms=ret_rms,
                                   tasks=None
                                   )
 
@@ -103,25 +106,30 @@ class MetaLearner:
     def initialise_policy(self):
 
         # initialise policy network
-        policy_net = Policy(
-            args=self.args,
-            #
-            pass_state_to_policy=self.args.pass_state_to_policy,
-            pass_latent_to_policy=self.args.pass_latent_to_policy,
-            pass_belief_to_policy=self.args.pass_belief_to_policy,
-            pass_task_to_policy=self.args.pass_task_to_policy,
-            dim_state=self.args.state_dim,
-            dim_latent=self.args.latent_dim * 2,
-            dim_belief=self.args.belief_dim,
-            dim_task=self.args.task_dim,
-            #
-            hidden_layers=self.args.policy_layers,
-            activation_function=self.args.policy_activation_function,
-            policy_initialisation=self.args.policy_initialisation,
-            #
-            action_space=self.envs.action_space,
-            init_std=self.args.policy_init_std,
-        ).to(device)
+        if self.args.wandb and self.logger.resumed:
+            policy_net = torch.load(os.path.join(
+                self.logger.full_output_folder, 'models', 'policy.pt')
+            ).to(device)
+        else:
+            policy_net = Policy(
+                args=self.args,
+                #
+                pass_state_to_policy=self.args.pass_state_to_policy,
+                pass_latent_to_policy=self.args.pass_latent_to_policy,
+                pass_belief_to_policy=self.args.pass_belief_to_policy,
+                pass_task_to_policy=self.args.pass_task_to_policy,
+                dim_state=self.args.state_dim,
+                dim_latent=self.args.latent_dim * 2,
+                dim_belief=self.args.belief_dim,
+                dim_task=self.args.task_dim,
+                #
+                hidden_layers=self.args.policy_layers,
+                activation_function=self.args.policy_activation_function,
+                policy_initialisation=self.args.policy_initialisation,
+                #
+                action_space=self.envs.action_space,
+                init_std=self.args.policy_init_std,
+            ).to(device)
 
         # initialise policy trainer
         if self.args.policy == 'a2c':

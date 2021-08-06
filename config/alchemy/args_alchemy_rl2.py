@@ -179,6 +179,7 @@ def get_args(rest_args):
     parser.add_argument('--wandb_project', default='msc-diss', help='wandb project')
     parser.add_argument('--wandb_group', default='alchemy_rl2', help='wandb group')
     parser.add_argument('--wandb_job_type', default='debug', help='wandb job type')
+    parser.add_argument('--wandb_id', default=None, help='wandb run id')
 
     # general settings
     parser.add_argument('--seed',  nargs='+', type=int, default=[73])

@@ -1,5 +1,6 @@
 import warnings
 
+import os
 import gym
 import numpy as np
 import torch
@@ -61,20 +62,23 @@ class VaribadVAE:
 
     def initialise_encoder(self):
         """ Initialises and returns an RNN encoder """
-        encoder = RNNEncoder(
-            args=self.args,
-            layers_before_gru=self.args.encoder_layers_before_gru,
-            hidden_size=self.args.encoder_gru_hidden_size,
-            layers_after_gru=self.args.encoder_layers_after_gru,
-            latent_dim=self.args.latent_dim,
-            action_dim=self.args.action_dim,
-            action_embed_dim=self.args.action_embedding_size,
-            state_dim=self.args.state_dim,
-            state_embed_dim=self.args.state_embedding_size,
-            reward_size=1,
-            reward_embed_size=self.args.reward_embedding_size,
-        ).to(device)
-        return encoder
+        if self.args.wandb and self.logger.resumed:
+            encoder = torch.load(os.path.join(self.logger.full_output_folder, 'models', 'encoder.pt'))
+        else:
+            encoder = RNNEncoder(
+                args=self.args,
+                layers_before_gru=self.args.encoder_layers_before_gru,
+                hidden_size=self.args.encoder_gru_hidden_size,
+                layers_after_gru=self.args.encoder_layers_after_gru,
+                latent_dim=self.args.latent_dim,
+                action_dim=self.args.action_dim,
+                action_embed_dim=self.args.action_embedding_size,
+                state_dim=self.args.state_dim,
+                state_embed_dim=self.args.state_embedding_size,
+                reward_size=1,
+                reward_embed_size=self.args.reward_embedding_size,
+            )
+        return encoder.to(device)
 
     def initialise_decoder(self):
         """ Initialises and returns the (state/reward/task) decoder as specified in self.args """
@@ -89,48 +93,63 @@ class VaribadVAE:
 
         # initialise state decoder for VAE
         if self.args.decode_state:
-            state_decoder = StateTransitionDecoder(
-                args=self.args,
-                layers=self.args.state_decoder_layers,
-                latent_dim=latent_dim,
-                action_dim=self.args.action_dim,
-                action_embed_dim=self.args.action_embedding_size,
-                state_dim=self.args.state_dim,
-                state_embed_dim=self.args.state_embedding_size,
-                pred_type=self.args.state_pred_type,
-            ).to(device)
+            if self.args.wandb and self.logger.resumed:
+                state_decoder = torch.load(
+                    os.path.join(self.logger.full_output_folder, 'models', 'state_decoder.pt')
+                ).to(device)
+            else:
+                state_decoder = StateTransitionDecoder(
+                    args=self.args,
+                    layers=self.args.state_decoder_layers,
+                    latent_dim=latent_dim,
+                    action_dim=self.args.action_dim,
+                    action_embed_dim=self.args.action_embedding_size,
+                    state_dim=self.args.state_dim,
+                    state_embed_dim=self.args.state_embedding_size,
+                    pred_type=self.args.state_pred_type,
+                ).to(device)
         else:
             state_decoder = None
 
         # initialise reward decoder for VAE
         if self.args.decode_reward:
-            reward_decoder = RewardDecoder(
-                args=self.args,
-                layers=self.args.reward_decoder_layers,
-                latent_dim=latent_dim,
-                state_dim=self.args.state_dim,
-                state_embed_dim=self.args.state_embedding_size,
-                action_dim=self.args.action_dim,
-                action_embed_dim=self.args.action_embedding_size,
-                num_states=self.args.num_states,
-                multi_head=self.args.multihead_for_reward,
-                pred_type=self.args.rew_pred_type,
-                input_prev_state=self.args.input_prev_state,
-                input_action=self.args.input_action,
-            ).to(device)
+            if self.args.wandb and self.logger.resumed:
+                reward_decoder = torch.load(
+                    os.path.join(self.logger.full_output_folder, 'models', 'reward_decoder.pt')
+                ).to(device)
+            else:
+                reward_decoder = RewardDecoder(
+                    args=self.args,
+                    layers=self.args.reward_decoder_layers,
+                    latent_dim=latent_dim,
+                    state_dim=self.args.state_dim,
+                    state_embed_dim=self.args.state_embedding_size,
+                    action_dim=self.args.action_dim,
+                    action_embed_dim=self.args.action_embedding_size,
+                    num_states=self.args.num_states,
+                    multi_head=self.args.multihead_for_reward,
+                    pred_type=self.args.rew_pred_type,
+                    input_prev_state=self.args.input_prev_state,
+                    input_action=self.args.input_action,
+                ).to(device)
         else:
             reward_decoder = None
 
         # initialise task decoder for VAE
         if self.args.decode_task:
             assert self.task_dim != 0
-            task_decoder = TaskDecoder(
-                latent_dim=latent_dim,
-                layers=self.args.task_decoder_layers,
-                task_dim=self.task_dim,
-                num_tasks=self.num_tasks,
-                pred_type=self.args.task_pred_type,
-            ).to(device)
+            if self.args.wandb and self.logger.resumed:
+                task_decoder = torch.load(
+                    os.path.join(self.logger.full_output_folder, 'models', 'task_decoder.pt')
+                ).to(device)
+            else:
+                task_decoder = TaskDecoder(
+                    latent_dim=latent_dim,
+                    layers=self.args.task_decoder_layers,
+                    task_dim=self.task_dim,
+                    num_tasks=self.num_tasks,
+                    pred_type=self.args.task_pred_type,
+                ).to(device)
         else:
             task_decoder = None
 
