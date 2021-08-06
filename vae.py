@@ -69,6 +69,7 @@ class VaribadVAE:
                 args=self.args,
                 layers_before_gru=self.args.encoder_layers_before_gru,
                 hidden_size=self.args.encoder_gru_hidden_size,
+                num_gru_layers=self.args.encoder_gru_num_layers,
                 layers_after_gru=self.args.encoder_layers_after_gru,
                 latent_dim=self.args.latent_dim,
                 action_dim=self.args.action_dim,

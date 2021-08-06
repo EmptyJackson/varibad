@@ -15,6 +15,7 @@ class RNNEncoder(nn.Module):
                  # network size
                  layers_before_gru=(),
                  hidden_size=64,
+                 num_gru_layers=1,
                  layers_after_gru=(),
                  latent_dim=32,
                  # actions, states, rewards
@@ -48,7 +49,7 @@ class RNNEncoder(nn.Module):
         # TODO: TEST RNN vs GRU vs LSTM
         self.gru = nn.GRU(input_size=curr_input_dim,
                           hidden_size=hidden_size,
-                          num_layers=1,
+                          num_layers=num_gru_layers,
                           )
 
         for name, param in self.gru.named_parameters():
