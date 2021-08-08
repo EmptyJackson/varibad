@@ -31,6 +31,7 @@ class RNNEncoder(nn.Module):
         self.args = args
         self.latent_dim = latent_dim
         self.hidden_size = hidden_size
+        self.num_gru_layers = num_gru_layers
         self.reparameterise = self._sample_gaussian
 
         # embed action, state, reward
@@ -49,7 +50,7 @@ class RNNEncoder(nn.Module):
         # TODO: TEST RNN vs GRU vs LSTM
         self.gru = nn.GRU(input_size=curr_input_dim,
                           hidden_size=hidden_size,
-                          num_layers=num_gru_layers,
+                          num_layers=self.num_gru_layers,
                           )
 
         for name, param in self.gru.named_parameters():
@@ -96,7 +97,7 @@ class RNNEncoder(nn.Module):
         # TODO: add option to incorporate the initial state
 
         # we start out with a hidden state of zero
-        hidden_state = torch.zeros((1, batch_size, self.hidden_size), requires_grad=True).to(device)
+        hidden_state = torch.zeros((self.num_gru_layers, batch_size, self.hidden_size), requires_grad=True).to(device)
 
         h = hidden_state
         # forward through fully connected layers after GRU
