@@ -252,7 +252,7 @@ class AlchemyFeatureExtractor(nn.Module):
             if mode == 'state':
                 self.stone_conv = nn.Conv1d(1, output_size, kernel_size=5, stride=5)
                 self.potion_conv = nn.Conv1d(1, 2, kernel_size=2, stride=2)
-                self._output_dim = 3 * output_size + 24
+                self._output_dim = 3 * output_size + 24 + 1
             elif mode == 'action':
                 self.action_conv = nn.Conv1d(1, output_size, kernel_size=13, stride=13)
                 self._output_dim = 3 * output_size + 1
