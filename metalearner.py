@@ -376,7 +376,7 @@ class MetaLearner:
 
         # --- visualise behaviour of policy ---
 
-        if (self.iter_idx + 1) % self.args.vis_interval == 0:
+        if not self.args.disable_vis and (self.iter_idx + 1) % self.args.vis_interval == 0:
             ret_rms = self.envs.venv.ret_rms if self.args.norm_rew_for_policy else None
             utl_eval.visualise_behaviour(args=self.args,
                                          policy=self.policy,

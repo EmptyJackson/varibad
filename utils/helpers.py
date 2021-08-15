@@ -261,27 +261,23 @@ class AlchemyFeatureExtractor(nn.Module):
 
     def forward(self, inputs):
         if self.output_size != 0:
-            squeezed = (len(inputs.shape) == 3)
-            if squeezed:
-                inputs = inputs.squeeze(0)
-            inputs = inputs.unsqueeze(1)
-
-            if mode == 'state':
+            in_shape = inputs.shape
+            if self.mode == 'state':
+                inputs = inputs.reshape(-1, 1, 40)
                 stones = inputs[:,:,:15]
                 potions = inputs[:,:,15:39]
                 done = inputs[:,:,39]
                 s_out = self.activation_function(self.stone_conv(stones)).flatten(1)
                 p_out = self.activation_function(self.potion_conv(potions)).flatten(1)
                 out = torch.cat((s_out, p_out, done), 1)
-            if mode == 'action':
-                action = F.one_hot(inputs, num_classes=40).float().to(device)
+            elif self.mode == 'action':
+                inputs = inputs.reshape(-1, 1, 1)
+                action = F.one_hot(inputs.long(), num_classes=40).squeeze(2).float().to(device)
                 action = action[:,:,1:]
                 a_out = self.action_conv(action).flatten(1)
                 # Prepend skip action
                 out = torch.cat((inputs[:,:,0], a_out), 1)
-            if squeezed:
-                out = out.unsqueeze(0)
-            return out
+            return out.reshape(*in_shape[:-1], -1)
         else:
             return torch.zeros(0, ).to(device)
 
