@@ -22,10 +22,15 @@ class StateTransitionDecoder(nn.Module):
 
         self.args = args
 
-        self.state_encoder = utl.FeatureExtractor(state_dim, state_embed_dim, F.relu)
-        self.action_encoder = utl.FeatureExtractor(action_dim, action_embed_dim, F.relu)
+        if self.args.env_name == 'Alchemy-v0' and self.args.alchemy_specific_embedding:
+            self.state_encoder = utl.AlchemyFeatureExtractor(state_embed_dim, F.relu, 'state')
+            self.action_encoder = utl.AlchemyFeatureExtractor(action_embed_dim, F.relu, 'action')
+            curr_input_dim = latent_dim + self.state_encoder.output_dim + self.action_encoder.output_dim
+        else:
+            self.state_encoder = utl.FeatureExtractor(state_dim, state_embed_dim, F.relu)
+            self.action_encoder = utl.FeatureExtractor(action_dim, action_embed_dim, F.relu)
+            curr_input_dim = latent_dim + state_embed_dim + action_embed_dim
 
-        curr_input_dim = latent_dim + state_embed_dim + action_embed_dim
         self.fc_layers = nn.ModuleList([])
         for i in range(len(layers)):
             self.fc_layers.append(nn.Linear(curr_input_dim, layers[i]))

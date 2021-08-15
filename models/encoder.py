@@ -35,12 +35,17 @@ class RNNEncoder(nn.Module):
         self.reparameterise = self._sample_gaussian
 
         # embed action, state, reward
-        self.state_encoder = utl.FeatureExtractor(state_dim, state_embed_dim, F.relu)
-        self.action_encoder = utl.FeatureExtractor(action_dim, action_embed_dim, F.relu)
         self.reward_encoder = utl.FeatureExtractor(reward_size, reward_embed_size, F.relu)
+        if self.args.env_name == 'Alchemy-v0' and self.args.alchemy_specific_embedding:
+            self.state_encoder = utl.AlchemyFeatureExtractor(state_embed_dim, F.relu, 'state')
+            self.action_encoder = utl.AlchemyFeatureExtractor(action_embed_dim, F.relu, 'action')
+            curr_input_dim = self.action_encoder.output_dim + self.state_encoder.output_dim + reward_embed_size
+        else:
+            self.state_encoder = utl.FeatureExtractor(state_dim, state_embed_dim, F.relu)
+            self.action_encoder = utl.FeatureExtractor(action_dim, action_embed_dim, F.relu)
+            curr_input_dim = action_embed_dim + state_embed_dim + reward_embed_size
 
         # fully connected layers before the recurrent cell
-        curr_input_dim = action_embed_dim + state_embed_dim + reward_embed_size
         self.fc_before_gru = nn.ModuleList([])
         for i in range(len(layers_before_gru)):
             self.fc_before_gru.append(nn.Linear(curr_input_dim, layers_before_gru[i]))
