@@ -4,6 +4,7 @@ import numpy as np
 from gym import spaces
 from dm_alchemy import symbolic_alchemy
 from dm_alchemy.encode import chemistries_proto_conversion
+from dm_alchemy.types.utils import ChemistrySeen, ElementContent
 
 LEVEL_NAME = 'alchemy/perceptual_mapping_randomized_with_rotation_and_random_bottleneck'
 CHEM_NAME = 'chemistries/perceptual_mapping_randomized_with_random_bottleneck/chemistries'
@@ -17,11 +18,12 @@ class AlchemyEnv(gym.Env):
 
         self.seed()
         self.fixed = fixed
+        ground_truth = ChemistrySeen(content=ElementContent.GROUND_TRUTH)
         if self.fixed:
             chems = chemistries_proto_conversion.load_chemistries_and_items(CHEM_NAME)
-            self.env = symbolic_alchemy.get_symbolic_alchemy_fixed(chemistry=chems[0][0], episode_items=chems[0][1])
+            self.env = symbolic_alchemy.get_symbolic_alchemy_fixed(chemistry=chems[0][0], episode_items=chems[0][1], see_chemistries={'task': ground_truth})
         else:
-            self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name=LEVEL_NAME, num_trials=num_trials, num_stones_per_trial=num_stones_per_trial, num_potions_per_trial=num_potions_per_trial, max_steps_per_trial=max_steps_per_trial)
+            self.env = symbolic_alchemy.get_symbolic_alchemy_level(level_name=LEVEL_NAME, num_trials=num_trials, num_stones_per_trial=num_stones_per_trial, num_potions_per_trial=num_potions_per_trial, max_steps_per_trial=max_steps_per_trial, see_chemistries={'task': ground_truth})
 
         self._max_episode_steps = self.env.max_steps_per_trial
         self.step_count = 0
@@ -29,6 +31,9 @@ class AlchemyEnv(gym.Env):
         # TODO: Values can be outside of [-1, 1], got 2 from manual observation
         self.observation_space = spaces.Box(low=-1, high=2, shape=(39,))
         self.action_space = spaces.Discrete(40)
+        self.task_dim = 28
+
+        self.reset_task()
 
     def step(self, action):
         """
@@ -40,8 +45,7 @@ class AlchemyEnv(gym.Env):
             action = action[0]
         self.timestep = self.env.step(action)
 
-        # self.timestep.last()
-        return self.timestep.observation['symbolic_obs'], self.timestep.reward, self.env.is_new_trial(), {'task': 0}
+        return self.timestep.observation['symbolic_obs'], self.timestep.reward, self.env.is_new_trial(), {'task': self.timestep.observation['task']}
 
     def reset(self):
         """
@@ -58,7 +62,7 @@ class AlchemyEnv(gym.Env):
         """
         Return a task description, such as goal position or target velocity.
         """
-        return 0
+        return self.timestep.observation['task']
 
     def reset_task(self, task=None):
         """
@@ -66,7 +70,7 @@ class AlchemyEnv(gym.Env):
         Should *not* reset the environment.
         """
         self.timestep = self.env.reset()
-        return 0
+        return self.timestep.observation['task']
 
     # def visualise_behaviour(self,
     #                         env,

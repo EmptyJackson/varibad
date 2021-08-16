@@ -139,7 +139,7 @@ def get_args(rest_args):
     parser.add_argument('--decode_task', type=boolean_argument, default=False, help='use task decoder')
     parser.add_argument('--task_loss_coeff', type=float, default=1.0, help='weight for task loss')
     parser.add_argument('--task_decoder_layers', nargs='+', type=int, default=[64, 32])
-    parser.add_argument('--task_pred_type', type=str, default='task_id', help='choose: task_id, task_description')
+    parser.add_argument('--task_pred_type', type=str, default='task_description', help='choose: task_id, task_description')
 
     # --- ABLATIONS ---
 
