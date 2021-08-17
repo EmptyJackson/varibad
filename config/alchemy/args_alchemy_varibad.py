@@ -134,6 +134,7 @@ def get_args(rest_args):
     parser.add_argument('--state_loss_coeff', type=float, default=1.0, help='weight for state loss')
     parser.add_argument('--state_decoder_layers', nargs='+', type=int, default=[64, 32])
     parser.add_argument('--state_pred_type', type=str, default='deterministic', help='choose: deterministic, gaussian')
+    parser.add_argument('--remove_trial_boundaries', type=boolean_argument, default=False, help='remove inter-trial transitions from decoder loss')
 
     # - decoder: ground-truth task ("varibad oracle", after Humplik et al. 2019)
     parser.add_argument('--decode_task', type=boolean_argument, default=False, help='use task decoder')
