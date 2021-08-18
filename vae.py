@@ -165,7 +165,7 @@ class VaribadVAE:
         if self.args.state_pred_type == 'deterministic':
             loss_state = state_pred - next_obs
             if self.args.env_name == 'Alchemy-v0' and self.args.remove_trial_boundaries:
-                trial_end_idxs = torch.tensor([19+i*20 for i in range(10)])
+                trial_end_idxs = torch.tensor([19+i*20 for i in range(10)]).to(device)
                 loss_state.index_fill_(1, trial_end_idxs, 0)
             loss_state = loss_state.pow(2).mean(dim=-1)
         elif self.args.state_pred_type == 'gaussian':  # TODO: untested!
