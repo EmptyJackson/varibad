@@ -79,7 +79,7 @@ class VaribadVAE:
                 reward_size=1,
                 reward_embed_size=self.args.reward_embedding_size,
             )
-        return encoder.to(device)
+        return nn.DataParallel(encoder).to(device)
 
     def initialise_decoder(self):
         """ Initialises and returns the (state/reward/task) decoder as specified in self.args """
@@ -95,11 +95,11 @@ class VaribadVAE:
         # initialise state decoder for VAE
         if self.args.decode_state:
             if self.args.wandb and self.logger.resumed:
-                state_decoder = torch.load(
+                state_decoder = nn.DataParallel(torch.load(
                     os.path.join(self.logger.full_output_folder, 'models', 'state_decoder.pt')
-                ).to(device)
+                )).to(device)
             else:
-                state_decoder = StateTransitionDecoder(
+                state_decoder = nn.DataParallel(StateTransitionDecoder(
                     args=self.args,
                     layers=self.args.state_decoder_layers,
                     latent_dim=latent_dim,
@@ -108,18 +108,18 @@ class VaribadVAE:
                     state_dim=self.args.state_dim,
                     state_embed_dim=self.args.state_embedding_size,
                     pred_type=self.args.state_pred_type,
-                ).to(device)
+                )).to(device)
         else:
             state_decoder = None
 
         # initialise reward decoder for VAE
         if self.args.decode_reward:
             if self.args.wandb and self.logger.resumed:
-                reward_decoder = torch.load(
+                reward_decoder = nn.DataParallel(torch.load(
                     os.path.join(self.logger.full_output_folder, 'models', 'reward_decoder.pt')
-                ).to(device)
+                )).to(device)
             else:
-                reward_decoder = RewardDecoder(
+                reward_decoder = nn.DataParallel(RewardDecoder(
                     args=self.args,
                     layers=self.args.reward_decoder_layers,
                     latent_dim=latent_dim,
@@ -132,7 +132,7 @@ class VaribadVAE:
                     pred_type=self.args.rew_pred_type,
                     input_prev_state=self.args.input_prev_state,
                     input_action=self.args.input_action,
-                ).to(device)
+                )).to(device)
         else:
             reward_decoder = None
 
@@ -140,17 +140,17 @@ class VaribadVAE:
         if self.args.decode_task:
             assert self.task_dim != 0
             if self.args.wandb and self.logger.resumed:
-                task_decoder = torch.load(
+                task_decoder = nn.DataParallel(torch.load(
                     os.path.join(self.logger.full_output_folder, 'models', 'task_decoder.pt')
-                ).to(device)
+                )).to(device)
             else:
-                task_decoder = TaskDecoder(
+                task_decoder = nn.DataParallel(TaskDecoder(
                     latent_dim=latent_dim,
                     layers=self.args.task_decoder_layers,
                     task_dim=self.task_dim,
                     num_tasks=self.num_tasks,
                     pred_type=self.args.task_pred_type,
-                ).to(device)
+                )).to(device)
         else:
             task_decoder = None
 
