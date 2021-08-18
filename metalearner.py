@@ -4,7 +4,6 @@ import time
 import gym
 import numpy as np
 import torch
-import torch.nn as nn
 
 from algorithms.a2c import A2C
 from algorithms.online_storage import OnlineStorage
@@ -108,11 +107,11 @@ class MetaLearner:
 
         # initialise policy network
         if self.args.wandb and self.logger.resumed:
-            policy_net = nn.DataParallel(torch.load(os.path.join(
+            policy_net = torch.load(os.path.join(
                 self.logger.full_output_folder, 'models', 'policy.pt')
-            )).to(device)
+            ).to(device)
         else:
-            policy_net = nn.DataParallel(Policy(
+            policy_net = Policy(
                 args=self.args,
                 #
                 pass_state_to_policy=self.args.pass_state_to_policy,
@@ -130,7 +129,7 @@ class MetaLearner:
                 #
                 action_space=self.envs.action_space,
                 init_std=self.args.policy_init_std,
-            )).to(device)
+            ).to(device)
 
         # initialise policy trainer
         if self.args.policy == 'a2c':
