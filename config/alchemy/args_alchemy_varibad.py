@@ -28,8 +28,8 @@ def get_args(rest_args):
     parser.add_argument('--alchemy_specific_embedding', action='store_true', help='use state and action embedding specific to alchemy')
 
     # normalising (inputs/rewards/outputs)
-    parser.add_argument('--norm_state_for_policy', type=boolean_argument, default=False, help='normalise state input')
-    parser.add_argument('--norm_latent_for_policy', type=boolean_argument, default=False, help='normalise latent input')
+    parser.add_argument('--norm_state_for_policy', type=boolean_argument, default=True, help='normalise state input')
+    parser.add_argument('--norm_latent_for_policy', type=boolean_argument, default=True, help='normalise latent input')
     parser.add_argument('--norm_belief_for_policy', type=boolean_argument, default=False, help='normalise belief input')
     parser.add_argument('--norm_task_for_policy', type=boolean_argument, default=False, help='normalise task input')
     parser.add_argument('--norm_rew_for_policy', type=boolean_argument, default=True, help='normalise rew for RL train')
@@ -37,7 +37,7 @@ def get_args(rest_args):
     parser.add_argument('--norm_actions_post_sampling', type=boolean_argument, default=False, help='normalise policy output')
 
     # network
-    parser.add_argument('--policy_layers', nargs='+', default=[128, 128])
+    parser.add_argument('--policy_layers', nargs='+', default=32)
     parser.add_argument('--policy_activation_function', type=str, default='tanh', help='tanh/relu/leaky-relu')
     parser.add_argument('--policy_initialisation', type=str, default='normc', help='normc/orthogonal')
     parser.add_argument('--policy_anneal_lr', type=boolean_argument, default=False, help='anneal LR over time')
@@ -47,7 +47,7 @@ def get_args(rest_args):
     parser.add_argument('--policy_optimiser', type=str, default='adam', help='choose: rmsprop, adam')
 
     # PPO specific
-    parser.add_argument('--ppo_num_epochs', type=int, default=16, help='number of epochs per PPO update')
+    parser.add_argument('--ppo_num_epochs', type=int, default=4, help='number of epochs per PPO update')
     parser.add_argument('--ppo_num_minibatch', type=int, default=4, help='number of minibatches to split the data')
     parser.add_argument('--ppo_use_huberloss', type=boolean_argument, default=True, help='use huberloss instead of MSE')
     parser.add_argument('--ppo_use_clipped_value_loss', type=boolean_argument, default=True, help='clip value loss')
@@ -63,11 +63,11 @@ def get_args(rest_args):
     parser.add_argument('--policy_init_std', type=float, default=1.0, help='only used for continuous actions')
     parser.add_argument('--policy_value_loss_coef', type=float, default=0.5, help='value loss coefficient')
     parser.add_argument('--policy_entropy_coef', type=float, default=0.01, help='entropy term coefficient')
-    parser.add_argument('--policy_gamma', type=float, default=0.97, help='discount factor for rewards')
+    parser.add_argument('--policy_gamma', type=float, default=0.99, help='discount factor for rewards')
     parser.add_argument('--policy_use_gae', type=boolean_argument, default=True,
                         help='use generalized advantage estimation')
-    parser.add_argument('--policy_tau', type=float, default=0.9, help='gae parameter')
-    parser.add_argument('--use_proper_time_limits', type=boolean_argument, default=True,
+    parser.add_argument('--policy_tau', type=float, default=0.95, help='gae parameter')
+    parser.add_argument('--use_proper_time_limits', type=boolean_argument, default=False,
                         help='treat timeout and death differently (important in mujoco)')
     parser.add_argument('--policy_max_grad_norm', type=float, default=0.5, help='max norm of gradients')
     parser.add_argument('--encoder_max_grad_norm', type=float, default=1.0, help='max norm of gradients')
