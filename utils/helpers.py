@@ -271,27 +271,24 @@ class AlchemyFeatureExtractor(nn.Module):
         if self.output_size != 0:
             in_shape = inputs.shape
             if self.mode == 'state':
-                inputs = inputs.reshape(-1, 1, 40)
+                inputs = inputs.reshape(-1, 1, 5*self.args.alchemy_num_stones+2*self.args.alchemy_num_potions+1)
                 stones = inputs[:,:,:5*self.args.alchemy_num_stones]
                 potions = inputs[:,:,5*self.args.alchemy_num_stones:-1]
                 done = inputs[:,:,-1]
-                s_out = self.activation_function(self.stone_net(stones))
-                if self.args.alchemy_num_stones != 1:
-                    # Flatten convolution output channels
-                    s_out = s_out.flatten(1)
+                s_out = self.activation_function(self.stone_net(stones)).flatten(1)
                 p_out = self.activation_function(self.potion_conv(potions)).flatten(1)
                 out = torch.cat((s_out, p_out, done), 1)
             elif self.mode == 'action':
-                if self.args.alchemy_num_stones == 1:
-                    # Return one-hot vector when using a single stone
-                    return F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(2).float().to(device)
-                else:
-                    inputs = inputs.reshape(-1, 1, 1)
-                    action = F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(2).float().to(device)
-                    action = action[:,:,1:]
-                    a_out = self.action_conv(action).flatten(1)
-                    # Prepend skip action
-                    out = torch.cat((inputs[:,:,0], a_out), 1)
+                inputs = inputs.reshape(-1, 1)
+                out = F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(1).float().to(device)
+                # if self.args.alchemy_num_stones == 1:
+                #     # Return one-hot vector when using a single stone
+                #     return F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(2).float().to(device)
+                # else:
+                #     action = action[:,:,1:]
+                #     a_out = self.action_conv(action).flatten(1)
+                #     # Prepend skip action
+                #     out = torch.cat((inputs[:,:,0], a_out), 1)
             return out.reshape(*in_shape[:-1], -1)
         else:
             return torch.zeros(0, ).to(device)
