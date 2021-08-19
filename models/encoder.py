@@ -37,8 +37,8 @@ class RNNEncoder(nn.Module):
         # embed action, state, reward
         self.reward_encoder = utl.FeatureExtractor(reward_size, reward_embed_size, F.relu)
         if self.args.env_name == 'Alchemy-v0' and self.args.alchemy_specific_embedding:
-            self.state_encoder = utl.AlchemyFeatureExtractor(state_embed_dim, F.relu, 'state')
-            self.action_encoder = utl.AlchemyFeatureExtractor(action_embed_dim, F.relu, 'action')
+            self.state_encoder = utl.AlchemyFeatureExtractor(args, state_embed_dim, F.relu, 'state')
+            self.action_encoder = utl.AlchemyFeatureExtractor(args, action_embed_dim, F.relu, 'action')
             curr_input_dim = self.action_encoder.output_dim() + self.state_encoder.output_dim() + reward_embed_size
         else:
             self.state_encoder = utl.FeatureExtractor(state_dim, state_embed_dim, F.relu)

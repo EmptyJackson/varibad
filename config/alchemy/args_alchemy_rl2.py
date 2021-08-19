@@ -12,6 +12,10 @@ def get_args(rest_args):
     parser.add_argument('--exp_label', default='rl2', help='label (typically name of method)')
     parser.add_argument('--env_name', default='Alchemy-v0', help='environment to train on')
 
+    # Alchemy specific
+    parser.add_argument('--alchemy_num_stones', type=int, default=1, help='number of stones per trial')
+    parser.add_argument('--alchemy_num_potions', type=int, default=12, help='number of potions per trial')
+
     # -- RL2 (things to change in VariBAD to get to RL2 setup) --
 
     parser.add_argument('--disable_decoder', type=boolean_argument, default=True,

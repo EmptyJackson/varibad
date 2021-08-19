@@ -243,19 +243,27 @@ class FeatureExtractor(nn.Module):
 class AlchemyFeatureExtractor(nn.Module):
     """ Used for extrating Alchemy features for states/actions/rewards """
 
-    def __init__(self, output_size, activation_function, mode):
+    def __init__(self, args, output_size, activation_function, mode):
         super(AlchemyFeatureExtractor, self).__init__()
+        self.args = args
         self.output_size = output_size
         self.activation_function = activation_function
         self.mode = mode
         if self.output_size != 0:
             if mode == 'state':
-                self.stone_conv = nn.Conv1d(1, output_size, kernel_size=5, stride=5)
+                if self.args.alchemy_num_stones == 1:
+                    self.stone_net = nn.Linear(5, output_size)
+                else:
+                    self.stone_net = nn.Conv1d(1, output_size, kernel_size=5, stride=5)
                 self.potion_conv = nn.Conv1d(1, 2, kernel_size=2, stride=2)
-                self._output_dim = 3 * output_size + 24 + 1
+                self._output_dim = self.args.alchemy_num_stones * output_size + 2 * self.args.alchemy_num_potions + 1
             elif mode == 'action':
-                self.action_conv = nn.Conv1d(1, output_size, kernel_size=13, stride=13)
-                self._output_dim = 3 * output_size + 1
+                self._n_actions = self.args.alchemy_num_stones * (self.args.alchemy_num_potions + 1) + 1
+                if self.args.alchemy_num_stones == 1:
+                    self._output_dim = self._n_actions
+                else:
+                    self.action_conv = nn.Conv1d(1, output_size, kernel_size=13, stride=13)
+                    self._output_dim = self.args.alchemy_num_stones * output_size + 1
             else:
                 raise NotImplementedError
 
@@ -264,19 +272,26 @@ class AlchemyFeatureExtractor(nn.Module):
             in_shape = inputs.shape
             if self.mode == 'state':
                 inputs = inputs.reshape(-1, 1, 40)
-                stones = inputs[:,:,:15]
-                potions = inputs[:,:,15:39]
-                done = inputs[:,:,39]
-                s_out = self.activation_function(self.stone_conv(stones)).flatten(1)
+                stones = inputs[:,:,:5*self.args.alchemy_num_stones]
+                potions = inputs[:,:,5*self.args.alchemy_num_stones:-1]
+                done = inputs[:,:,-1]
+                s_out = self.activation_function(self.stone_net(stones))
+                if self.args.alchemy_num_stones != 1:
+                    # Flatten convolution output channels
+                    s_out = s_out.flatten(1)
                 p_out = self.activation_function(self.potion_conv(potions)).flatten(1)
                 out = torch.cat((s_out, p_out, done), 1)
             elif self.mode == 'action':
-                inputs = inputs.reshape(-1, 1, 1)
-                action = F.one_hot(inputs.long(), num_classes=40).squeeze(2).float().to(device)
-                action = action[:,:,1:]
-                a_out = self.action_conv(action).flatten(1)
-                # Prepend skip action
-                out = torch.cat((inputs[:,:,0], a_out), 1)
+                if self.args.alchemy_num_stones == 1:
+                    # Return one-hot vector when using a single stone
+                    return F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(2).float().to(device)
+                else:
+                    inputs = inputs.reshape(-1, 1, 1)
+                    action = F.one_hot(inputs.long(), num_classes=self._n_actions).squeeze(2).float().to(device)
+                    action = action[:,:,1:]
+                    a_out = self.action_conv(action).flatten(1)
+                    # Prepend skip action
+                    out = torch.cat((inputs[:,:,0], a_out), 1)
             return out.reshape(*in_shape[:-1], -1)
         else:
             return torch.zeros(0, ).to(device)

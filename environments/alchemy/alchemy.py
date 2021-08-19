@@ -14,7 +14,8 @@ class AlchemyEnv(gym.Env):
     def __init__(self, num_trials=10, num_stones_per_trial=3, num_potions_per_trial=12, max_steps_per_trial=20, fixed=False):
         super(AlchemyEnv, self).__init__()
 
-        # TODO: Use max_rollouts_per_task somewhere (i think)
+        self.num_stones_per_trial = num_stones_per_trial
+        self.num_potions_per_trial = num_potions_per_trial
 
         self.seed()
         self.fixed = fixed
@@ -28,9 +29,10 @@ class AlchemyEnv(gym.Env):
         self._max_episode_steps = self.env.max_steps_per_trial
         self.step_count = 0
 
-        # TODO: Values can be outside of [-1, 1], got 2 from manual observation
-        self.observation_space = spaces.Box(low=-1, high=2, shape=(39,))
-        self.action_space = spaces.Discrete(40)
+        obs_dim = num_stones_per_trial * 5 + num_potions_per_trial * 2
+        act_dim = 1 + num_stones_per_trial * (1 + num_potions_per_trial)
+        self.observation_space = spaces.Box(low=-1, high=2, shape=(obs_dim,))
+        self.action_space = spaces.Discrete(act_dim)
         self.task_dim = 28
 
         self.reset_task()
@@ -45,7 +47,7 @@ class AlchemyEnv(gym.Env):
             action = action[0]
         self.timestep = self.env.step(action)
 
-        return self.timestep.observation['symbolic_obs'], self.timestep.reward, self.env.is_new_trial(), {'task': self.timestep.observation['task']}
+        return self._reduce_obs(self.timestep.observation['symbolic_obs']), self.timestep.reward, self.env.is_new_trial(), {'task': self.timestep.observation['task']}
 
     def reset(self):
         """
@@ -56,7 +58,10 @@ class AlchemyEnv(gym.Env):
         """
         if not self.env.is_new_trial():
             raise Exception("Alchemy reset not on trial boundary.")
-        return self.timestep.observation['symbolic_obs']
+        return self._reduce_obs(self.timestep.observation['symbolic_obs'])
+
+    def _reduce_obs(self, obs):
+        return obs[np.r_[0:self.num_stones_per_trial*5, 15:15+self.num_potions_per_trial*2]]
 
     def get_task(self):
         """

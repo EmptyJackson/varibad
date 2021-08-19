@@ -12,6 +12,10 @@ def get_args(rest_args):
     parser.add_argument('--exp_label', default='varibad', help='label (typically name of method)')
     parser.add_argument('--env_name', default='Alchemy-v0', help='environment to train on')
 
+    # Alchemy specific
+    parser.add_argument('--alchemy_num_stones', type=int, default=1, help='number of stones per trial')
+    parser.add_argument('--alchemy_num_potions', type=int, default=12, help='number of potions per trial')
+
     # --- POLICY ---
 
     # what to pass to the policy (note this is after the encoder)
@@ -37,7 +41,7 @@ def get_args(rest_args):
     parser.add_argument('--norm_actions_post_sampling', type=boolean_argument, default=False, help='normalise policy output')
 
     # network
-    parser.add_argument('--policy_layers', nargs='+', default=32)
+    parser.add_argument('--policy_layers', nargs='+', default=[32])
     parser.add_argument('--policy_activation_function', type=str, default='tanh', help='tanh/relu/leaky-relu')
     parser.add_argument('--policy_initialisation', type=str, default='normc', help='normc/orthogonal')
     parser.add_argument('--policy_anneal_lr', type=boolean_argument, default=False, help='anneal LR over time')

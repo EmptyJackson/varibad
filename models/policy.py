@@ -100,7 +100,7 @@ class Policy(nn.Module):
         self.use_state_encoder = self.args.policy_state_embedding_dim is not None
         if self.pass_state_to_policy and self.use_state_encoder:
             if self.args.env_name == 'Alchemy-v0' and self.args.alchemy_specific_embedding:
-                self.state_encoder = utl.AlchemyFeatureExtractor(self.args.policy_state_embedding_dim, self.activation_function, 'state')
+                self.state_encoder = utl.AlchemyFeatureExtractor(self.args, self.args.policy_state_embedding_dim, self.activation_function, 'state')
                 curr_input_dim = curr_input_dim - dim_state + self.state_encoder.output_dim()
             else:
                 self.state_encoder = utl.FeatureExtractor(dim_state, self.args.policy_state_embedding_dim, self.activation_function)
