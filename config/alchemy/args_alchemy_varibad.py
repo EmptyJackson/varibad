@@ -186,7 +186,7 @@ def get_args(rest_args):
     parser.add_argument('--save_intermediate_models', type=boolean_argument, default=False, help='save all models')
     parser.add_argument('--eval_interval', type=int, default=200, help='eval interval, one eval per n updates')
     parser.add_argument('--vis_interval', type=int, default=1e10, help='visualisation interval, one eval per n updates')
-    parser.add_argument('--disable_vis', action='store_true', help='disable visualisation')
+    parser.add_argument('--disable_vis', type=boolean_argument, default=True, help='disable visualisation')
     parser.add_argument('--results_log_dir', default=None, help='directory to save results (None uses ./logs)')
     parser.add_argument('--wandb', action='store_true', help='whether to log to wandb instead of tensorboard')
     parser.add_argument('--wandb_entity', default='mjackson', help='wandb entity')
