@@ -621,20 +621,20 @@ class VaribadVAE:
 
         if log:
             self.log(elbo_loss, rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss,
-                    pretrain_index)
+                    pretrain_index, log)
 
 
         return elbo_loss
 
     def log(self, elbo_loss, rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss,
-            pretrain_index=None):
+            pretrain_index=None, log=False):
 
         if pretrain_index is None:
             curr_iter_idx = self.get_iter_idx()
         else:
             curr_iter_idx = - self.args.pretrain_len * self.args.num_vae_updates_per_pretrain + pretrain_index
 
-        if curr_iter_idx % self.args.log_interval == 0:
+        if curr_iter_idx % self.args.log_interval == 0 or log:
 
             if self.args.decode_reward:
                 self.logger.add('vae_losses/reward_reconstr_err', rew_reconstruction_loss.mean(), curr_iter_idx)
