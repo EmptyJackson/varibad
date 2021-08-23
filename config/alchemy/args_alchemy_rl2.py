@@ -110,6 +110,10 @@ def get_args(rest_args):
                         help='for how many timesteps to compute the ELBO; None uses all')
     parser.add_argument('--vae_subsample_decodes', type=int, default=None,
                         help='number of reconstruction terms to subsample; None uses all')
+    parser.add_argument('--vae_avg_elbo_terms', type=boolean_argument, default=True,
+                        help='Average ELBO terms (instead of sum)')
+    parser.add_argument('--vae_avg_reconstruction_terms', type=boolean_argument, default=True,
+                        help='Average reconstruction terms (instead of sum)')
     parser.add_argument('--num_vae_updates', type=int, default=1,
                         help='how many VAE update steps to take per meta-iteration')
     parser.add_argument('--pretrain_len', type=int, default=0, help='for how many updates to pre-train the VAE')
@@ -157,6 +161,14 @@ def get_args(rest_args):
     parser.add_argument('--task_pred_type', type=str, default='task_id', help='choose: task_id, task_description')
 
     # --- ABLATIONS ---
+
+    # for the VAE
+    parser.add_argument('--disable_stochasticity_in_latent', type=boolean_argument, default=True,
+                        help='use auto-encoder (non-variational)')
+    parser.add_argument('--decode_only_past', type=boolean_argument, default=False,
+                        help='only decoder past observations, not the future')
+    parser.add_argument('--kl_to_gauss_prior', type=boolean_argument, default=False,
+                        help='KL term in ELBO to fixed Gaussian prior (instead of prev approx posterior)')
 
     # for the policy training
     parser.add_argument('--sample_embeddings', type=boolean_argument, default=False,
