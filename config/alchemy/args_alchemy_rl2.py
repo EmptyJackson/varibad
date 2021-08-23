@@ -43,7 +43,7 @@ def get_args(rest_args):
     parser.add_argument('--policy_latent_embedding_dim', type=int, default=None)
     parser.add_argument('--policy_belief_embedding_dim', type=int, default=None)
     parser.add_argument('--policy_task_embedding_dim', type=int, default=None)
-    parser.add_argument('--alchemy_specific_embedding', action='store_true', help='use state and action embedding specific to alchemy')
+    parser.add_argument('--alchemy_specific_embedding', type=boolean_argument, default=True, help='use state and action embedding specific to alchemy')
 
     # normalising (inputs/rewards/outputs)
     parser.add_argument('--norm_state_for_policy', type=boolean_argument, default=False, help='normalise state input')
