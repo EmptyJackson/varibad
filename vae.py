@@ -545,7 +545,7 @@ class VaribadVAE:
 
         return rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss
 
-    def compute_vae_loss(self, update=False, pretrain_index=None, log_trial_err=False):
+    def compute_vae_loss(self, update=False, pretrain_index=None, log=False):
         """ Returns the VAE loss """
 
         if not self.rollout_storage.ready_for_update():
@@ -579,7 +579,7 @@ class VaribadVAE:
                                                              trajectory_lens)
         else:
             losses = self.compute_loss(latent_mean, latent_logvar, vae_prev_obs, vae_next_obs, vae_actions,
-                                       vae_rewards, vae_tasks, trajectory_lens, log_trial_err)
+                                       vae_rewards, vae_tasks, trajectory_lens, log)
         rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss = losses
 
         # VAE loss = KL loss + reward reconstruction + state transition reconstruction
@@ -592,7 +592,7 @@ class VaribadVAE:
         # overall loss
         elbo_loss = loss.mean()
 
-        if not log_trial_err:
+        if not log:
             # make sure we can compute gradients
             if not self.args.disable_kl_term:
                 assert kl_loss.requires_grad
@@ -619,8 +619,9 @@ class VaribadVAE:
                 # update
                 self.optimiser_vae.step()
 
-        self.log(elbo_loss, rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss,
-                 pretrain_index)
+        if log:
+            self.log(elbo_loss, rew_reconstruction_loss, state_reconstruction_loss, task_reconstruction_loss, kl_loss,
+                    pretrain_index)
 
 
         return elbo_loss
