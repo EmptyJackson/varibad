@@ -378,17 +378,19 @@ class VaribadVAE:
         if self.args.decode_state:
             state_reconstruction_loss = self.compute_state_reconstruction_loss(dec_embedding, dec_prev_obs,
                                                                                dec_next_obs, dec_actions)
+            if log_trial_err:
+                for i in range(10):
+                    err = 0
+                    for j in range(10):
+                        # Skip final (inter-trial) step
+                        err += state_reconstruction_loss[(20*i)+1:(20*i)+20, 20*j:(20*j)+19].mean()
+                    self.logger.add('vae_losses/trial_' + str(i) + '_state_err', err/10, 0)
             # avg/sum across individual ELBO terms
             if self.args.vae_avg_elbo_terms:
                 state_reconstruction_loss = state_reconstruction_loss.mean(dim=0)
             else:
                 state_reconstruction_loss = state_reconstruction_loss.sum(dim=0)
             # avg/sum across individual reconstruction terms
-            if log_trial_err:
-                for i in range(10):
-                    # Skip final (inter-trial) step
-                    self.logger.add('vae_losses/trial_' + str(i) + '_state_err',
-                                    state_reconstruction_loss[20*i:(20*i)+19].mean(), 0)
             if self.args.vae_avg_reconstruction_terms:
                 state_reconstruction_loss = state_reconstruction_loss.mean(dim=0)
             else:
